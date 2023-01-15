@@ -1,5 +1,6 @@
 using Livraria.Data;
 using Livraria.Models;
+using Livraria.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,9 +10,9 @@ namespace Livraria.Controllers
     [Route("api/[controller]")]
     public class LivrosController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IUnitOfWork _context;
 
-        public LivrosController(DataContext context)
+        public LivrosController(IUnitOfWork context)
         {
             _context = context;
         }
@@ -19,7 +20,7 @@ namespace Livraria.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Livro>> Get()
         {
-            var livros = _context.Livros.AsNoTracking().ToList();
+            var livros = _context.LivroRepository.Get().ToList();
             if (livros is null)
             {
                 return NotFound("Nenhum livro encontrado");
@@ -29,7 +30,7 @@ namespace Livraria.Controllers
         [HttpGet("{id:int}")]
         public ActionResult<Livro> Get(int id)
         {
-            var livro = _context.Livros.AsNoTracking().FirstOrDefault(livro => livro.Id == id);
+            var livro = _context.LivroRepository.GetById(livro => livro.Id == id);
             if (livro is null)
             {
                 return NotFound("Livro não encontrado");
@@ -43,8 +44,8 @@ namespace Livraria.Controllers
             {
                 return BadRequest();
             }
-            _context.Livros.Add(livro);
-            _context.SaveChanges();
+            _context.LivroRepository.Add(livro);
+            _context.Commit();
             return Ok(livro);
         }
         [HttpPut("{id:int}")]
@@ -55,20 +56,20 @@ namespace Livraria.Controllers
                 return NotFound();
             }
 
-            _context.Livros.Update(livro);
-            _context.SaveChanges();
+            _context.LivroRepository.Update(livro);
+            _context.Commit();
             return Ok(livro);
         }
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var livro = _context.Livros.FirstOrDefault(livro => livro.Id == id);
+            var livro = _context.LivroRepository.GetById(livro => livro.Id == id);
             if (livro == null)
             {
                 return NotFound();
             }
-            _context.Livros.Remove(livro);
-            _context.SaveChanges();
+            _context.LivroRepository.Delete(livro);
+            _context.Commit();
 
             return Ok(livro);
         }
