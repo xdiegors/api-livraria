@@ -1,7 +1,6 @@
-using Livraria.Data;
 using Livraria.Models;
+using Livraria.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Livraria.Controllers
 {
@@ -9,9 +8,9 @@ namespace Livraria.Controllers
     [Route("api/[controller]")]
     public class AutoresController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IUnitOfWork _context;
 
-        public AutoresController(DataContext context)
+        public AutoresController(IUnitOfWork context)
         {
             _context = context;
         }
@@ -19,7 +18,7 @@ namespace Livraria.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Autor>> Get()
         {
-            var Autores = _context.Autores.AsNoTracking().ToList();
+            var Autores = _context.AutorRepository.Get().ToList();
             if (Autores is null)
             {
                 return NotFound("Nenhum autor encontrado");
@@ -29,7 +28,7 @@ namespace Livraria.Controllers
         [HttpGet("{id:int}")]
         public ActionResult<Autor> Get(int id)
         {
-            var autor = _context.Autores.AsNoTracking().FirstOrDefault(autor => autor.Id == id);
+            var autor = _context.AutorRepository.GetById(autor => autor.Id == id);
             if (autor is null)
             {
                 return NotFound("Autor não encontrado");
@@ -43,8 +42,8 @@ namespace Livraria.Controllers
             {
                 return BadRequest();
             }
-            _context.Autores.Add(autor);
-            _context.SaveChanges();
+            _context.AutorRepository.Add(autor);
+            _context.Commit();
             return Ok(autor);
         }
         [HttpPut("{id:int}")]
@@ -55,20 +54,20 @@ namespace Livraria.Controllers
                 return NotFound();
             }
 
-            _context.Autores.Update(autor);
-            _context.SaveChanges();
+            _context.AutorRepository.Update(autor);
+            _context.Commit();
             return Ok(autor);
         }
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var autor = _context.Autores.FirstOrDefault(autor => autor.Id == id);
+            var autor = _context.AutorRepository.GetById(autor => autor.Id == id);
             if (autor == null)
             {
                 return NotFound();
             }
-            _context.Autores.Remove(autor);
-            _context.SaveChanges();
+            _context.AutorRepository.Delete(autor);
+            _context.Commit();
 
             return Ok(autor);
         }

@@ -1,7 +1,6 @@
-using Livraria.Data;
 using Livraria.Models;
+using Livraria.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Livraria.Controllers
 {
@@ -9,9 +8,9 @@ namespace Livraria.Controllers
     [Route("api/[controller]")]
     public class CategoriasController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IUnitOfWork _context;
 
-        public CategoriasController(DataContext context)
+        public CategoriasController(IUnitOfWork context)
         {
             _context = context;
         }
@@ -19,7 +18,7 @@ namespace Livraria.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            var Categorias = _context.Categorias.AsNoTracking().ToList();
+            var Categorias = _context.CategoriaRepository.Get().ToList();
             if (Categorias is null)
             {
                 return NotFound("Nenhuma categoria encontrado");
@@ -29,7 +28,7 @@ namespace Livraria.Controllers
         [HttpGet("{id:int}")]
         public ActionResult<Categoria> Get(int id)
         {
-            var categoria = _context.Categorias.AsNoTracking().FirstOrDefault(categoria => categoria.Id == id);
+            var categoria = _context.CategoriaRepository.Get().FirstOrDefault(categoria => categoria.Id == id);
             if (categoria is null)
             {
                 return NotFound("Categoria não encontrada");
@@ -43,8 +42,8 @@ namespace Livraria.Controllers
             {
                 return BadRequest();
             }
-            _context.Categorias.Add(categoria);
-            _context.SaveChanges();
+            _context.CategoriaRepository.Add(categoria);
+            _context.Commit();
             return Ok(categoria);
         }
         [HttpPut("{id:int}")]
@@ -55,20 +54,20 @@ namespace Livraria.Controllers
                 return NotFound();
             }
 
-            _context.Categorias.Update(categoria);
-            _context.SaveChanges();
+            _context.CategoriaRepository.Update(categoria);
+            _context.Commit();
             return Ok(categoria);
         }
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var categoria = _context.Categorias.FirstOrDefault(categoria => categoria.Id == id);
+            var categoria = _context.CategoriaRepository.GetById(categoria => categoria.Id == id);
             if (categoria == null)
             {
                 return NotFound();
             }
-            _context.Categorias.Remove(categoria);
-            _context.SaveChanges();
+            _context.CategoriaRepository.Delete(categoria);
+            _context.Commit();
 
             return Ok(categoria);
         }

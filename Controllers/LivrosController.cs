@@ -1,8 +1,6 @@
-using Livraria.Data;
 using Livraria.Models;
 using Livraria.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Livraria.Controllers
 {
